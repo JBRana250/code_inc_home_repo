@@ -140,8 +140,11 @@ class GameCodingScreen:
     def on_run_button_press(self):
         text = self.coding_text_entry.get(1.0, tk.END)
         split_text = coding_text_splitter.split_text_elements(text, self.regex_pattern)
+        print(split_text)
         tokenized_text = self.tokenizer.tokenize_lines_list(split_text)
-        print(tokenized_text)
+        for line in tokenized_text:
+            for token in line:
+                print([token.token_type, token.token_value])
 
 
 
