@@ -105,7 +105,7 @@ class Tokenizer:
 
                 # at this point, element is either a number or an identifier (all other options were tested)
                 if element.isnumeric():  # is a number
-                    new_line.append(Token("NUMBER", element, line_num, current_element_pos))
+                    new_line.append(Token("LITERAL_NUMBER", element, line_num, current_element_pos))
                     current_element_pos += 1
                 elif element[0] not in self.digits:  # is an identifier
                     new_line.append(Token("IDENTIFIER", element, line_num, current_element_pos))
@@ -115,7 +115,7 @@ class Tokenizer:
 
             else:
                 if element == in_string_punctuator:
-                    new_line.append(Token("LITERAL", current_string, line_num, current_element_pos))
+                    new_line.append(Token("LITERAL_STRING", current_string, line_num, current_element_pos))
                     in_string = False
                     in_string_punctuator = None
                     current_element_pos += 1
