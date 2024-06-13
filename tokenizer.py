@@ -70,39 +70,48 @@ class Tokenizer:
         current_string = ""
         for element in line:
             if not in_string:
-                if element == " ": # skip whitespace
+                if element == " ":  # skip whitespace
                     continue
-                if element in self.assignment_operators: # is element an operator?
+                if element in self.assignment_operators:  # is element an operator?
                     new_line.append(Token(self.assignment_operators[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
                     continue
                 if element in self.comparison_operators:
                     new_line.append(Token(self.comparison_operators[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
                     continue
                 if element in self.arithmetic_operators:
                     new_line.append(Token(self.arithmetic_operators[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
                     continue
-                if element in self.keywords: # is element a keyword?
+                if element in self.keywords:  # is element a keyword?
                     new_line.append(Token(self.keywords[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
                     continue
-                if element in self.special_literals: # is element a special literal? (true/false)
+                if element in self.special_literals:  # is element a special literal? (true/false)
                     new_line.append(Token(self.keywords[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
                     continue
-                if element in self.punctuators: # is element a punctuator?
-                    if element == "\"" or element == "'": # is it quotation marks? if so, enter string
+                if element in self.punctuators:  # is element a punctuator?
+                    if element == "\"" or element == "'":  # is it quotation marks? if so, enter string
                         in_string = True
                         in_string_punctuator = element
                         current_element_pos += 1
                         continue
-                    else: # if not, just append punctuator.
+                    else:  # if not, just append punctuator.
                         new_line.append(Token(self.punctuators[element], element, line_num, current_element_pos))
                         current_element_pos += 1
                         continue
-                
+
                 # at this point, element is either a number or an identifier (all other options were tested)
-                if element[0] in self.digits: # is a number since identifiers cannot start with a number. current implementation can't handle negative numbers or floats
+                if element.isnumeric():  # is a number
                     new_line.append(Token("NUMBER", element, line_num, current_element_pos))
-                else: # is an identifier
+                    current_element_pos += 1
+                elif element[0] not in self.digits:  # is an identifier
                     new_line.append(Token("IDENTIFIER", element, line_num, current_element_pos))
+                    current_element_pos += 1
+                else:
+                    return "SyntaxError: at line {line}, token {token}: Invalid Token".format(line=line_num, token=current_element_pos)
 
             else:
                 if element == in_string_punctuator:
@@ -120,6 +129,9 @@ class Tokenizer:
         current_line_pos = 1
         for line in lines_list:
             new_line = self.tokenize_line(line, current_line_pos)
-            new_lines_list.append(new_line)
-            current_line_pos += 1
+            if type(new_line) is str:
+                return new_line
+            else:
+                new_lines_list.append(new_line)
+                current_line_pos += 1
         return new_lines_list

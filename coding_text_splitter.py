@@ -3,7 +3,7 @@ import re
 
 def create_regex_pattern():
     # --- Formats each delimiter into the format '(\\{})' where {} is the delimiter
-    delimiters = [' ', '(', ')', '\'', '"', '.', '=', '==', '!=' '+', '-', '/', '*']
+    delimiters = [' ', '(', ')', '\'', '"', '.', '=', '==', '!=', '+', '-', '/', '*']
     changed_delimiters = []
     for delimiter in delimiters:
         delimiter = re.escape(delimiter)

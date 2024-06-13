@@ -1,6 +1,7 @@
 import tkinter as tk
 import coding_text_splitter
 import tokenizer
+import parser
 
 
 inner_screen_frame_color = '#6C86A6'
@@ -20,6 +21,7 @@ class GameCodingScreen:
 
         self.regex_pattern = coding_text_splitter.create_regex_pattern()
         self.tokenizer = tokenizer.Tokenizer()
+        self.parser = parser.Parser()
 
         self.screen = tk.Frame(self.outer_frame, background='#D9D9D9')
         self.screen.pack(fill="both", expand=True, padx=25, pady=25)
@@ -142,9 +144,9 @@ class GameCodingScreen:
         split_text = coding_text_splitter.split_text_elements(text, self.regex_pattern)
         print(split_text)
         tokenized_text = self.tokenizer.tokenize_lines_list(split_text)
-        for line in tokenized_text:
-            for token in line:
-                print([token.token_type, token.token_value])
-
+        if type(tokenized_text) is str:
+            print(tokenized_text)
+        else:
+            ast = self.parser.parse_lines_list(tokenized_text)
 
 
