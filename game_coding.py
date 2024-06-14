@@ -147,6 +147,7 @@ class GameCodingScreen:
         if type(tokenized_text) is str:
             print(tokenized_text)
         else:
-            ast = self.parser.parse_lines_list(tokenized_text)
+            expr = self.parser.parse_expression(tokenized_text)
+            print(expr)
 
 
