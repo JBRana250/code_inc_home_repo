@@ -32,6 +32,10 @@ class Tokenizer:
         "<=": "OPERATOR_LESS_OR_EQUALS"
     }
 
+    logical_operators = {
+        "not": "OPERATOR_NOT"
+    }
+
     arithmetic_operators = {
         "+": "OPERATOR_ADD",
         "-": "OPERATOR_SUB",
@@ -52,7 +56,7 @@ class Tokenizer:
     }
 
     keywords = {
-        "print": "KEYWORD_PRINT"
+        "print": "KEYWORD_PRINT",
     }
 
     special_literals = {
@@ -84,12 +88,16 @@ class Tokenizer:
                     new_line.append(Token(self.arithmetic_operators[element], element, line_num, current_element_pos))
                     current_element_pos += 1
                     continue
+                if element in self.logical_operators:
+                    new_line.append(Token(self.logical_operators[element], element, line_num, current_element_pos))
+                    current_element_pos += 1
+                    continue
                 if element in self.keywords:  # is element a keyword?
                     new_line.append(Token(self.keywords[element], element, line_num, current_element_pos))
                     current_element_pos += 1
                     continue
                 if element in self.special_literals:  # is element a special literal? (true/false)
-                    new_line.append(Token(self.keywords[element], element, line_num, current_element_pos))
+                    new_line.append(Token(self.special_literals[element], element, line_num, current_element_pos))
                     current_element_pos += 1
                     continue
                 if element in self.punctuators:  # is element a punctuator?
