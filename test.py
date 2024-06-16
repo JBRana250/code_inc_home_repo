@@ -1,3 +1,2 @@
-var1 = "hello"
-if type(var1) is not str:
-    print("hi")
+var1 = True == "hlelo"
+print(var1)

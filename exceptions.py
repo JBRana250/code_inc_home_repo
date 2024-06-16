@@ -1,8 +1,11 @@
 class ParseError(Exception):
-    pass
+    def print_debug(self):
+        print("unspecified error")
+
 
 class ExpectedTokenError(ParseError):
     expected_tokens = []
+
     def __init__(self, *args: object, _expected_tokens) -> None:
         super().__init__(*args)
         self.expected_tokens = _expected_tokens
@@ -14,6 +17,7 @@ class ExpectedTokenError(ParseError):
 
 class UnexpectedTokenError(ParseError):
     unexpected_tokens = []
+
     def __init__(self, *args: object, _unexpected_tokens) -> None:
         super().__init__(*args)
         self.unexpected_tokens = _unexpected_tokens
@@ -25,9 +29,11 @@ class UnexpectedTokenError(ParseError):
         tokens = ', '.join(tokens_list)
         print("Unexpected Tokens {}".format(tokens))
 
+
 class ExpectedExpressionError(ParseError):
     def print_debug(self):
         print("Expected Expression")
+
 
 class InnerRuntimeError(Exception):  # runtime error encountered when interpreting the user's code
     token = None

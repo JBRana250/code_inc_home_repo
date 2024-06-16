@@ -108,8 +108,6 @@ class Parser:  # figure out what statements are being made
                     return expressions.BinaryExpression(left_expr, right_expr, operator)
         else:
             return self.parse_unary(tokens)
-    
-    
 
     def parse_unary(self, tokens):
         # if we see an unary operator, recursively call self.parse_unary again (since it is possible to have multiple unary operators)
