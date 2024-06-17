@@ -60,8 +60,9 @@ class Tokenizer:
     }
 
     special_literals = {
-        "True": "LITERAL_TRUE",
-        "False": "LITERAL_FALSE"
+        "True": "LITERAL_BOOL",
+        "False": "LITERAL_BOOL",
+        "None": "LITERAL_NONE"
     }
 
     digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']

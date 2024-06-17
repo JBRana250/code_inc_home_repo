@@ -151,7 +151,7 @@ class GameCodingScreen:
             ast = None
             try:
                 ast = self.parser.parse_expression(tokenized_test_line)
-                ast.print_debug()
+                # ast.print_debug()
             except ParseError as error:
                 error.print_debug()
             output = ast.interpret()

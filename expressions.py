@@ -1,29 +1,29 @@
 import exceptions
 
 
-def check_number_operand(operand):
-    if isinstance(operand, int | float | complex):  # if variable type is numeric
+def check_number_operand(operand_type):
+    if operand_type == "LITERAL_NUMBER":
         return True
     else:
-        raise exceptions.InnerRuntimeError(_token=operand, _message="Operand(s) must be a number")
+        raise exceptions.InnerRuntimeError(_token=operand_type, _message="Operand(s) must be a number")
 
 
-def is_number(operand):  # the difference with this function is that it doesn't raise an error if it fails
-    if isinstance(operand, int | float | complex):  # if variable type is numeric
+def is_number(operand_type):  # the difference with this function is that it doesn't raise an error if it fails
+    if operand_type == "LITERAL_NUMBER":
         return True
     else:
         return False
 
 
-def check_string_operand(operand):
-    if isinstance(operand, str):
+def check_string_operand(operand_type):
+    if operand_type == "LITERAL_STRING":
         return True
     else:
-        raise exceptions.InnerRuntimeError(_token=operand, _message="Operand(s) must be a string")
+        raise exceptions.InnerRuntimeError(_token=operand_type, _message="Operand(s) must be a string")
 
 
-def is_string(operand):
-    if isinstance(operand, str):
+def is_string(operand_type):
+    if operand_type == "LITERAL_STRING":
         return True
     else:
         return False
@@ -47,6 +47,8 @@ class BinaryExpression:
     right_expr = None
     operator = None
 
+    expr_type = ""
+
     def __init__(self, _left, _right, _operator):
         self.left_expr = _left
         self.right_expr = _right
@@ -62,68 +64,88 @@ class BinaryExpression:
     def interpret(self):
         lexpr = self.left_expr.interpret()
         rexpr = self.right_expr.interpret()
+        lexpr_type = self.left_expr.get_type()
+        rexpr_type = self.right_expr.get_type()
 
         match self.operator.token_value:
             case "*":
-                check_number_operand(lexpr)
-                check_number_operand(rexpr)
-                return lexpr * rexpr
+                check_number_operand(lexpr_type)
+                check_number_operand(rexpr_type)
+                self.expr_type = "LITERAL_NUMBER"
+                return float(lexpr) * float(rexpr)
             case "/":
-                check_number_operand(lexpr)
-                check_number_operand(rexpr)
-                return lexpr / rexpr
+                check_number_operand(lexpr_type)
+                check_number_operand(rexpr_type)
+                self.expr_type = "LITERAL_NUMBER"
+                return float(lexpr) / float(rexpr)
             case "-":
-                check_number_operand(lexpr)
-                check_number_operand(rexpr)
-                return lexpr - rexpr
+                check_number_operand(lexpr_type)
+                check_number_operand(rexpr_type)
+                self.expr_type = "LITERAL_NUMBER"
+                return float(lexpr) - float(rexpr)
             case "+":
-                if is_string(lexpr) and is_string(rexpr):
-                    return lexpr + rexpr
-                elif is_number(lexpr) and is_number(rexpr):
-                    return lexpr + rexpr
+                if is_string(lexpr_type) and is_string(rexpr_type):
+                    self.expr_type = "LITERAL_STRING"
+                    return str(lexpr) + str(rexpr)
+                elif is_number(lexpr_type) and is_number(rexpr_type):
+                    self.expr_type = "LITERAL_NUMBER"
+                    return float(lexpr) + float(rexpr)
                 else:
                     raise exceptions.InnerRuntimeError(_token=self.operator, _message="Operands need to be either both numbers or both strings")
             case ">":  # ONLY none is unsupported operand.
                 if (lexpr is None) or (rexpr is None):
                     raise exceptions.InnerRuntimeError(_token=self.operator, _message="Unsupported operand None")
                 else:
+                    self.expr_type = "LITERAL_BOOL"
                     return lexpr > rexpr
             case "<":  # ONLY none is unsupported operand.
                 if (lexpr is None) or (rexpr is None):
                     raise exceptions.InnerRuntimeError(_token=self.operator, _message="Unsupported operand None")
                 else:
+                    self.expr_type = "LITERAL_BOOL"
                     return lexpr > rexpr
             case ">=":  # ONLY none is unsupported operand.
                 if (lexpr is None) or (rexpr is None):
                     raise exceptions.InnerRuntimeError(_token=self.operator, _message="Unsupported operand None")
                 else:
+                    self.expr_type = "LITERAL_BOOL"
                     return lexpr > rexpr
             case "<=":  # ONLY none is unsupported operand.
                 if (lexpr is None) or (rexpr is None):
                     raise exceptions.InnerRuntimeError(_token=self.operator, _message="Unsupported operand None")
                 else:
+                    self.expr_type = "LITERAL_BOOL"
                     return lexpr > rexpr
             case "==":
+                self.expr_type = "LITERAL_BOOL"
                 return lexpr == rexpr
             case "!=":
+                self.expr_type = "LITERAL_BOOL"
                 return lexpr != rexpr
+
+    def get_type(self):
+        return self.expr_type
 
 
 class LiteralExpression:
-    value = None
+    token = None
 
-    def __init__(self, _value):
-        self.value = _value
+    def __init__(self, _token):
+        self.token = _token
     
     def print_debug(self):
-        print("type: LiteralExpression, value = {}".format(self.value.token_value))
+        print("type: LiteralExpression, value = {}".format(self.token.token_value))
 
     def interpret(self):
-        return self.value.token_value
+        return self.token.token_value
+
+    def get_type(self):
+        return self.token.token_type
 
 
 class GroupingExpression:
     expression = None
+    expr_type = ""
 
     def __init__(self, _expression):
         self.expression = _expression
@@ -152,10 +174,11 @@ class UnaryExpression:
 
     def interpret(self):
         right_expr = self.expression.interpret()
+        right_expr_type = self.expression.get_type()
 
         match self.unary_operator.token_value:
             case '-':
-                check_number_operand(right_expr)
+                check_number_operand(right_expr_type)
                 return -right_expr
             case 'not':
                 return not (is_truthy(right_expr))
