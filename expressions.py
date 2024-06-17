@@ -137,7 +137,10 @@ class LiteralExpression:
         print("type: LiteralExpression, value = {}".format(self.token.token_value))
 
     def interpret(self):
-        return self.token.token_value
+        if is_number(self.token.token_type):
+            return float(self.token.token_value)
+        else:
+            return self.token.token_value
 
     def get_type(self):
         return self.token.token_type
@@ -156,12 +159,20 @@ class GroupingExpression:
         self.expression.print_debug()
 
     def interpret(self):
-        return self.expression.interpret()
+        expr = self.expression.interpret()
+        self.expr_type = self.expression.get_type()
+        return expr
+    
+    def get_type(self):
+        return self.expr_type
+    
+
 
 
 class UnaryExpression:
     unary_operator = None
     expression = None
+    expr_type = ""
 
     def __init__(self, _expression, _operator):
         self.unary_operator = _operator
@@ -179,6 +190,11 @@ class UnaryExpression:
         match self.unary_operator.token_value:
             case '-':
                 check_number_operand(right_expr_type)
-                return -right_expr
+                self.expr_type = "LITERAL_NUMBER"
+                return -float(right_expr)
             case 'not':
+                self.expr_type = "LITERAL_BOOL"
                 return not (is_truthy(right_expr))
+    
+    def get_type(self):
+        return self.expr_type
