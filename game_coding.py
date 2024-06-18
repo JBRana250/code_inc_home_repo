@@ -2,6 +2,7 @@ import tkinter as tk
 import coding_text_splitter
 import tokenizer
 import program_parser
+import environment
 from exceptions import ParseError
 
 inner_screen_frame_color = '#6C86A6'
@@ -22,6 +23,7 @@ class GameCodingScreen:
         self.regex_pattern = coding_text_splitter.create_regex_pattern()
         self.tokenizer = tokenizer.Tokenizer()
         self.parser = program_parser.Parser()
+        self.environment = environment.Environment()
 
         self.screen = tk.Frame(self.outer_frame, background='#D9D9D9')
         self.screen.pack(fill="both", expand=True, padx=25, pady=25)
@@ -147,15 +149,14 @@ class GameCodingScreen:
         if type(tokenized_text) is str:
             print(tokenized_text)
         else:
-            tokenized_test_line = tokenized_text[0]
-            ast = None
+            program = None
             try:
-                ast = self.parser.parse_expression(tokenized_test_line)
-                # ast.print_debug()
+                program = self.parser.parse_program(tokenized_text)
+                for statement in program:
+                    statement.print_debug()
+
             except ParseError as error:
                 error.print_debug()
-            output = ast.interpret()
-            print(output)
             
 
 

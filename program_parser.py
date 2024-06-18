@@ -1,12 +1,14 @@
 import expressions
 import exceptions
+import statements
+
 
 class Parser:  # figure out what statements are being made
-    # we need to made parse_expression first, since expressions are a very important building block
-
     # these expressions are parsed in top-down order from lowest precedence to highest precedence.
     # the reason why is because in the AST we would want the highest precedence at the lowest points in the AST, and vice versa.
     # so therefore, we look for lower precedence first to put them at the higher points in the AST.
+
+    #  Expressions
 
     def parse_expression(self, tokens):
         return self.parse_comparison(tokens)
@@ -129,9 +131,11 @@ class Parser:  # figure out what statements are being made
                 return expressions.LiteralExpression(first_token)
             elif first_token.token_value == "None":
                 return expressions.LiteralExpression(first_token)
-            elif tokens[0].token_type == "LITERAL_NUMBER":
+            elif first_token.token_type == "LITERAL_NUMBER":
                 return expressions.LiteralExpression(first_token)
-            elif tokens[0].token_type == "LITERAL_STRING":
+            elif first_token.token_type == "LITERAL_STRING":
+                return expressions.LiteralExpression(first_token)
+            elif first_token.token_type == "IDENTIFIER":
                 return expressions.LiteralExpression(first_token)
             else:
                 raise exceptions.UnexpectedTokenError("Unexpected Token", _unexpected_tokens = [first_token])
@@ -165,3 +169,41 @@ class Parser:  # figure out what statements are being made
         else:
             raise exceptions.UnexpectedTokenError("Unexpected Tokens", _unexpected_tokens = tokens[1:])  # does not match any pattern for primary expression
         
+    # Statements
+
+    def parse_statement(self, tokens):
+        first_token = tokens[0]
+        if first_token.token_type == "KEYWORD_PRINT":
+            return self.parse_print_statement(tokens)
+        elif first_token.token_type == "IDENTIFIER":
+            return self.parse_var_declaration(tokens)
+        return
+
+    def parse_print_statement(self, tokens):
+        sliced_tokens = tokens[1:]
+        if sliced_tokens[0].token_value == "(":
+            if sliced_tokens[-1].token_value == ")":
+                sliced_expr = sliced_tokens[1:-1]  # slice off opening and closing parenthesis
+                expr = self.parse_expression(sliced_expr)
+                return statements.PrintStatement(expr)
+            else:
+                raise exceptions.ExpectedTokenError(_expected_tokens=")")
+        else:
+            raise exceptions.ExpectedTokenError(_expected_tokens="(")
+
+    def parse_var_declaration(self, tokens):
+        identifier = tokens[0]
+        if tokens[1].token_value == "=":
+            #  try parse expression that is being assigned
+            sliced_expr = tokens[2:]
+            expr = self.parse_expression(sliced_expr)
+            return statements.VarDeclaration(identifier, expr)
+        else:
+            raise exceptions.ExpectedTokenError(_expected_tokens=["="])
+
+    # Program Parse
+    def parse_program(self, tokens_list):
+        statements_list = []
+        for line in tokens_list:
+            statements_list.append(self.parse_statement(line))
+        return statements_list
