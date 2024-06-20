@@ -1,12 +1,17 @@
+import tkinter
+
 import expressions
 import exceptions
 import statements
+import program_class
 
 
 class Parser:  # figure out what statements are being made
-    # these expressions are parsed in top-down order from lowest precedence to highest precedence.
-    # the reason why is because in the AST we would want the highest precedence at the lowest points in the AST, and vice versa.
-    # so therefore, we look for lower precedence first to put them at the higher points in the AST.
+    program = None
+    output_panel = None
+
+    def __init__(self, _output_panel):
+        self.output_panel = _output_panel
 
     #  Expressions
 
@@ -126,19 +131,19 @@ class Parser:  # figure out what statements are being made
         first_token = tokens[0]
         if len(tokens) == 1:  # single terminal
             if first_token.token_value == "True":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             elif first_token.token_value == "False":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             elif first_token.token_value == "None":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             elif first_token.token_type == "LITERAL_NUMBER":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             elif first_token.token_type == "LITERAL_STRING":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             elif first_token.token_type == "IDENTIFIER":
-                return expressions.LiteralExpression(first_token)
+                return expressions.LiteralExpression(first_token, self.program)
             else:
-                raise exceptions.UnexpectedTokenError("Unexpected Token", _unexpected_tokens = [first_token])
+                raise exceptions.UnexpectedTokenError("Unexpected Token", _unexpected_tokens=[first_token])
         elif tokens[0].token_value == "(":  # follows pattern '(' expression ')'
             tokens_in_paren = []
             expr = None
@@ -185,7 +190,7 @@ class Parser:  # figure out what statements are being made
             if sliced_tokens[-1].token_value == ")":
                 sliced_expr = sliced_tokens[1:-1]  # slice off opening and closing parenthesis
                 expr = self.parse_expression(sliced_expr)
-                return statements.PrintStatement(expr)
+                return statements.PrintStatement(expr, self.output_panel)
             else:
                 raise exceptions.ExpectedTokenError(_expected_tokens=")")
         else:
@@ -197,13 +202,16 @@ class Parser:  # figure out what statements are being made
             #  try parse expression that is being assigned
             sliced_expr = tokens[2:]
             expr = self.parse_expression(sliced_expr)
-            return statements.VarDeclaration(identifier, expr)
+            return statements.VarDeclaration(identifier, expr, self.program)
         else:
             raise exceptions.ExpectedTokenError(_expected_tokens=["="])
 
     # Program Parse
     def parse_program(self, tokens_list):
-        statements_list = []
+        self.program = program_class.Program()
+        self.output_panel.config(state="normal")
+        self.output_panel.delete(1.0, tkinter.END)
+        self.output_panel.config(state="disabled")
         for line in tokens_list:
-            statements_list.append(self.parse_statement(line))
-        return statements_list
+            self.program.statements_list.append(self.parse_statement(line))
+        return self.program

@@ -3,7 +3,7 @@ import coding_text_splitter
 import tokenizer
 import program_parser
 import environment
-from exceptions import ParseError
+import exceptions
 
 inner_screen_frame_color = '#6C86A6'
 font = "Courier New"
@@ -19,11 +19,6 @@ class GameCodingScreen:
         self.outer_frame = args[0]
         self.screen_switcher = args[1]
         self.user = args[2]
-
-        self.regex_pattern = coding_text_splitter.create_regex_pattern()
-        self.tokenizer = tokenizer.Tokenizer()
-        self.parser = program_parser.Parser()
-        self.environment = environment.Environment()
 
         self.screen = tk.Frame(self.outer_frame, background='#D9D9D9')
         self.screen.pack(fill="both", expand=True, padx=25, pady=25)
@@ -141,6 +136,11 @@ class GameCodingScreen:
         self.output_panel = tk.Text(self.bottom_right_frame, background='#6F6F6F', state='disabled')
         self.output_panel.pack(fill='both', expand=True)
 
+        self.regex_pattern = coding_text_splitter.create_regex_pattern()
+        self.tokenizer = tokenizer.Tokenizer()
+        self.parser = program_parser.Parser(self.output_panel)
+        self.environment = environment.Environment()
+
     def on_run_button_press(self):
         text = self.coding_text_entry.get(1.0, tk.END)
         split_text = coding_text_splitter.split_text_elements(text, self.regex_pattern)
@@ -149,14 +149,20 @@ class GameCodingScreen:
         if type(tokenized_text) is str:
             print(tokenized_text)
         else:
-            program = None
             try:
                 program = self.parser.parse_program(tokenized_text)
-                for statement in program:
-                    statement.print_debug()
-
-            except ParseError as error:
+            except exceptions.ParseError as error:
                 error.print_debug()
+            else:
+                print(program.statements_list)
+                for statement in program.statements_list:
+                    try:
+                        statement.interpret()
+                    except exceptions.InnerRuntimeError as error:
+                        self.output_panel.config(state="normal")
+                        self.output_panel.insert(tk.END, error.message)
+                        self.output_panel.config(state="disabled")
+                program.environment.map.clear()  # clear after running
             
 
 

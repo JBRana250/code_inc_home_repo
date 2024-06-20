@@ -129,9 +129,12 @@ class BinaryExpression:
 
 class LiteralExpression:
     token = None
+    program = None
 
-    def __init__(self, _token):
+    def __init__(self, _token, _program):
         self.token = _token
+        self.var_value = None
+        self.program = _program
     
     def print_debug(self):
         print("type: LiteralExpression, value = {}".format(self.token.token_value))
@@ -139,10 +142,20 @@ class LiteralExpression:
     def interpret(self):
         if is_number(self.token.token_type):
             return float(self.token.token_value)
+        elif self.token.token_type == "IDENTIFIER":
+            self.var_value = self.program.environment.get(self.token.token_value)
+            return self.var_value  # return the value associated with the var
         else:
             return self.token.token_value
 
     def get_type(self):
+        if self.token.token_type == "IDENTIFIER":
+            if isinstance(self.var_value, bool):
+                return "LITERAL_BOOL"
+            elif isinstance(self.var_value, float):
+                return "LITERAL_NUMBER"
+            elif isinstance(self.var_value, str):
+                return "LITERAL_STRING"
         return self.token.token_type
 
 
